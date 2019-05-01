@@ -1,23 +1,24 @@
 <template>
     <div class="container">
-    <el-button type="success" size='medium' class='addquestion'>添加题目</el-button>
+    <el-button type="success" size='medium' class='addquestion' @click="addQue()">添加题目</el-button>
+    
     <el-table
-    :data="tableData"
+    :data="questionData"
     border
     style="width: 95%">
     <el-table-column
       fixed
-      prop="number"
+      prop="id"
       label="序号"
       width="80">
     </el-table-column>
     <el-table-column
-      prop="name"
+      prop="question_title"
       label="题目名称"
       width="780">
     </el-table-column>
     <el-table-column
-      prop="date"
+      prop="createAt"
       label="添加时间"
       width="200">
     </el-table-column>
@@ -36,11 +37,11 @@
   :before-close="handleClose">
   <el-form ref="form" :model="form" label-width="100px" class="demo-dynamic">
   <el-form-item label="题目名称">
-    <el-input v-model="form.name"></el-input>
+    <el-input v-model="form.title"></el-input>
   </el-form-item>
 
   <el-form-item label="题目类型" prop="resource">
-    <el-radio-group v-model="form.resource">
+    <el-radio-group v-model="form.type">
       <el-radio label="单选"></el-radio>
       <el-radio label="多选"></el-radio>
       <el-radio label="填空"></el-radio>
@@ -48,80 +49,148 @@
   </el-form-item>
 
   <el-form-item
-    v-for="(domain, index) in dynamicValidateForm.domains"
-    :label="'选项' + index"
-    :key="domain.key"
-    :prop="'domains.' + index + '.value'"
+    v-for="(value, index) in form.options"
+    :label="'选项' + (index + 1)"
+    :key="value.key"
+    :prop="'options.' + index + '.value'"
     :rules="{
       required: true, message: '选项不能为空', trigger: 'blur'
     }"
   >
-    <el-input v-model="domain.value"></el-input><el-button @click.prevent="removeDomain(domain)">删除</el-button>
+    <el-input v-model="value.value"></el-input><el-button @click.prevent="removeOption(value, 'form')">删除</el-button>
   </el-form-item>
 
   <el-form-item>
-    <el-button @click="addDomain">新增选项</el-button>
+    <el-button @click="addOption('form')">新增选项</el-button>
   </el-form-item>
 
   <el-form-item>
-    <el-button type="primary" @click="submitForm('dynamicValidateForm')">保存</el-button>
+    <el-button type="primary" @click="submitForm('form')">保存</el-button>
     <el-button @click="dialogFormVisible = false">取消</el-button>
   </el-form-item>
 </el-form>
 </el-dialog>
-        <el-button
+
+      <el-button
           size="mini"
           type="danger"
           @click="handleDelete(scope.$index, scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
+
+  <div class="block">
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="currentPage"
+      :page-sizes="[5, 10]"
+      :page-size="100"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total='total'>
+    </el-pagination>
+  </div>
+<el-dialog
+  title="添加题目"
+  :visible.sync="dialogAddFormVisible"
+  width="40%"
+  :before-close="handleClose">
+  <el-form ref="addForm" :model="addForm" label-width="100px" class="demo-dynamic">
+  <el-form-item label="题目名称">
+    <el-input v-model="addForm.title"></el-input>
+  </el-form-item>
+
+  <el-form-item label="题目类型" prop="resource">
+    <el-radio-group v-model="addForm.type">
+      <el-radio label="0">单选</el-radio>
+      <el-radio label="1">多选</el-radio>
+      <el-radio label="2">填空</el-radio>
+    </el-radio-group>
+  </el-form-item>
+
+  <el-form-item
+    v-for="(value, index) in addForm.options"
+    :label="'选项' + (index + 1)"
+    :key="value.key"
+    :prop="'options.' + index + '.value'"
+    :rules="{
+      required: true, message: '选项不能为空', trigger: 'blur'
+    }"
+  >
+    <el-input v-model="value.value"></el-input><el-button @click.prevent="removeOption(value, 'addForm')">删除</el-button>
+  </el-form-item>
+
+  <el-form-item>
+    <el-button @click="addOption('addForm')">新增选项</el-button>
+  </el-form-item>
+
+  <el-form-item>
+    <el-button type="primary" @click="submitForm('addForm')">保存</el-button>
+    <el-button @click="dialogAddFormVisible = false">取消</el-button>
+  </el-form-item>
+</el-form>
+</el-dialog>
 </div>
 
 </template>
 
 <script>
+
+import { getQuestions, getQuestionCount, addQuestion } from '@/api/question'
+
   export default {
     data() {
       return {
+        pg: 1,
+        num: 10,
+        questionData: [],
+        total: 0,
+        currentPage: 1,
         question: null,
-        dynamicValidateForm: {
-          domains: [{
+        dialogFormVisible: false,
+        dialogAddFormVisible: false,
+        addForm: {
+          title: '',
+          type: 0,
+          options: [{
+            value: ''
+          }]
+        },
+        form: {
+          title: '',
+          type: 0,
+          options:[{
             value: ''
           }],
-          email: ''
-        },
-        tableData: [{
-          number: 1,
-          date: '2016-05-02',
-          name: '您认为学校食堂的饭菜价格如何？',
-        }, {
-          number: 2,
-          date: '2016-05-04',
-          name: '您认为食堂饭菜是否营养',
-        }, {
-          date: '2016-05-01',
-          name: '您觉得学校食堂饭菜的卫生情况如何？',
-          number: 3,
-        }, {
-          date: '2016-05-03',
-          name: '您认为食堂饭菜的口味如何',
-          number: 4,
-        }],
-        dialogFormVisible: false,
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
           delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        }
+        },
+        test: null
       }
     },
+    mounted () {
+      this.getQue(this.pg, this.num);
+      getQuestionCount().then( res => {
+        this.total = res.data.data;
+      })
+    },
     methods: {
+      handleClose(){},
+      addQue(){
+        this.dialogAddFormVisible = true;
+      },
+      getQue(pg, num){
+        getQuestions(pg, num).then( res => {
+          this.questionData = res.data.data;
+        })
+      },
+      handleSizeChange(val){
+        this.num = val;
+        this.getQue(this.pg, this.num);
+      },
+      handleCurrentChange(val){
+        this.pg = val;
+        this.getQue(this.pg, this.num);
+      },
       handleClick(row) {
         console.log(row);
       },
@@ -159,23 +228,42 @@
       resetForm(formName) {
         this.$refs[formName].resetFields();
       },
-      removeDomain(item) {
-        var index = this.dynamicValidateForm.domains.indexOf(item)
-        if (index !== -1) {
-          this.dynamicValidateForm.domains.splice(index, 1)
+      removeOption(item, formName) {
+        if (formName === 'form'){
+          let index = this.form.options.indexOf(item)
+          if (index !== -1) {
+            this.form.options.splice(index, 1)
+          }
+        }else {
+          let index = this.addForm.options.indexOf(item)
+          if (index !== -1) {
+            this.addForm.options.splice(index, 1)
+          }
         }
+
       },
-      addDomain() {
-        this.dynamicValidateForm.domains.push({
-          value: '',
-          key: Date.now()
-        });
+      addOption(formName) {
+        if(formName === 'form'){
+          this.form.options.push({
+            value: ''
+          })
+        }else {
+          this.addForm.options.push({
+            value: ''
+          });
+        }
       },
       submitForm(formName) {
         this.dialogFormVisible = false;
+        console.log('form', this.form);
+        console.log('addForm', this.addForm);
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            addQuestion(this.addForm).then( res => {
+              console.log(res);
+            }).catch(err => console.log(err))
             alert('submit!');
+
           } else {
             console.log('error submit!!');
             return false;
@@ -193,5 +281,8 @@
     }
     .addquestion {
         margin-bottom: 20px;
+    }
+    .block {
+      margin-top: 20px;
     }
 </style>

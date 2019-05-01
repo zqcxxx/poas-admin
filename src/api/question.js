@@ -8,10 +8,25 @@ export function getList(params) {
   })
 }
 
-export function getQuestions(params) {
+export function getQuestions(pg, num) {
   return request({
-    url: '/questions',
-    method: 'get',
-    params
+    url: `/question/getquestions/${pg}/${num}`,
+    method: 'get'
+  })
+}
+
+export function getQuestionCount() {
+  return request({
+    url: '/question/getquestioncount',
+    method: 'get'
+  })
+}
+
+export function addQuestion(data) {
+  console.log(typeof data)
+  return request({
+    url: '/question/addquestions',
+    method: 'post',
+    data: data
   })
 }

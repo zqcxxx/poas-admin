@@ -1,82 +1,115 @@
 <template>
-    <div class="container">
-    <el-button type="success" size='medium' class='addquestionaire'>创建问卷</el-button>
+  <div class="container">
+    <el-input v-model="input" placeholder="请输入员工编号" class="idput"></el-input>
+    <el-button type="primary" icon="el-icon-search" @click="searchRecord" class="btn">搜索</el-button>
     <el-table
-    :data="tableData"
+    :data="record"
     border
-    style="width: 95%">
+    class="rectable">
     <el-table-column
       fixed
-      prop="number"
+      prop="id"
       label="序号"
-      width="80">
+      width="100"
+    >
     </el-table-column>
     <el-table-column
-      prop="name"
-      label="问卷名称"
-      width="780">
+      fixed
+      prop="eid"
+      label="员工编号"
+      width="120"
+    >
     </el-table-column>
     <el-table-column
-      prop="date"
-      label="创建时间"
-      width="200">
+      fixed
+      prop="idCard"
+      label="身份证号"
+      width="120"
+    >
     </el-table-column>
     <el-table-column
-      label="操作"
+      prop="eName"
+      label="姓名"
+      width="120">
+    </el-table-column>
+    <el-table-column
+      prop="eDepartment"
+      label="部门"
+      width="120">
+    </el-table-column>
+    <el-table-column
+      prop="trainDate"
+      label="培训时间"
+      width="150">
+    </el-table-column>
+    <el-table-column
+      prop="trainContent"
+      label="培训内容"
       width="180">
+    </el-table-column>
+    <el-table-column
+      prop="remark"
+      label="备注"
+      width="300">
+    </el-table-column>
+    <el-table-column
+      fixed="right"
+      label="操作"
+      width="100">
       <template slot-scope="scope">
         <el-button
           size="mini"
-          @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-        <el-button
-          size="mini"
           type="danger"
-          @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+          @click="delRecord(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
-    </div>
-
+  </div>
 </template>
-
+    
 <script>
-  export default {
-    methods: {
-      handleClick(row) {
-        console.log(row);
-      }
+export default {
+  data () {
+    return{
+      record: [],
+      input: ''
+    }
+  },
+  mounted: function() {
+    this.initRecord()
+  },
+  methods: {
+    initRecord() {
+      this.getRequest('/personnel/Train/getEmpTrainData').then( res => {
+          this.record = res.data
+      }).catch(e => console.log(e))
     },
-
-    data() {
-      return {
-        tableData: [{
-          number: 1,
-          date: '2016-05-02',
-          name: '您认为学校食堂的饭菜价格如何？',
-        }, {
-          number: 2,
-          date: '2016-05-04',
-          name: '您认为食堂饭菜是否营养',
-        }, {
-          date: '2016-05-01',
-          name: '您觉得学校食堂饭菜的卫生情况如何？',
-          number: 3,
-        }, {
-          date: '2016-05-03',
-          name: '您认为食堂饭菜的口味如何',
-          number: 4,
-        }]
-      }
+    searchRecord(){
+      let id = Number(this.input)
+    },
+    delRecord(row){
+      let id = row.id
+      this.getRequest(`/personnel/Train/delEmpTrainDataById/${id}`).then( res => {
+        this.initRecord()
+      })
     }
   }
+}
 </script>
 
 <style lang='css' scoped>
     .container {
-        margin-top: 20px;
-        margin-left: 20px;
+        margin: 20px;
     }
-    .addquestionaire {
-        margin-bottom: 20px;
+    .idput {
+      width: 300px;
+      float: left;
+    }
+    .btn {
+      margin-left: 20px;
+    }
+    .rectable {
+      width: 90%;
+      margin-top: 20px;
     }
 </style>

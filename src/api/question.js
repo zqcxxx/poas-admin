@@ -53,3 +53,10 @@ export function editQuestion(data) {
     data: data
   })
 }
+
+export function getAllQuestions() {
+  return request({
+    url: '/question/getallquestions',
+    method: 'get'
+  })
+}

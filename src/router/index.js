@@ -39,12 +39,18 @@ export const constantRouterMap = [
   },
 
   {
+    path: '/showsurvey/:id',
+    component: () => import('@/views/showsurvey/index'),
+    hidden: true
+  },
+
+  {
     path: '/survey',
     component: Layout,
     redirect: '/survey/question',
     name: 'Survey',
     meta: {
-      title: 'Survey',
+      title: '调查',
       icon: 'form'
     },
     children: [
@@ -52,13 +58,27 @@ export const constantRouterMap = [
         path: 'question',
         component: () => import('@/views/survey/question/index'),
         name: 'Question',
-        meta: { title: 'Question', icon: 'clipboard' }
+        meta: { title: '问题', icon: 'clipboard' }
       },
       {
         path: 'questionnaire',
         component: () => import('@/views/survey/questionnaire/index'),
         name: 'Questionnaire',
-        meta: { title: 'Questionnaire', icon: 'edit' }
+        meta: { title: '问卷', icon: 'edit' },
+        children: [
+          {
+            path: 'addquestionnaire',
+            component: () => import('@/views/survey/questionnaire/addquestionnaire'),
+            name: 'Addquestionnaire',
+            meta: { title: '添加问卷', icon: 'edit' }
+          },
+          {
+            path: 'questionnairelist',
+            component: () => import('@/views/survey/questionnaire/questionnairelist'),
+            name: 'Questionnairelist',
+            meta: { title: '问卷列表', icon: 'edit' }
+          }
+        ]
       }
     ]
   },
@@ -71,7 +91,7 @@ export const constantRouterMap = [
         path: 'index',
         name: 'Result',
         component: () => import('@/views/result/index'),
-        meta: { title: 'Result', icon: 'chart' }
+        meta: { title: '分析结果', icon: 'chart' }
       }
     ]
   },

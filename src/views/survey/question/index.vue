@@ -37,6 +37,7 @@
     </el-table>
     <div class="block">
       <el-pagination
+        style="margin-bottom: 20px;"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
@@ -167,13 +168,20 @@ import { delOption } from '@/api/option'
       }
     },
     mounted: function () {
-      this.getQue(this.pg, this.num);
-      getQuestionCount().then( res => {
-        this.total = res.data.data;
-      })
+      this.initData()
     },
     methods: {
       handleClose(){},
+      initData() {
+        console.log('修改数据')
+        let _this = this
+        this.getQue(this.pg, this.num)
+        getQuestionCount().then( res => {
+          if(res.status === 200){
+            _this.total = res.data.data
+          }
+        })
+      },
       addQue(){
         this.dialogAddFormVisible = true;
       },
@@ -185,8 +193,9 @@ import { delOption } from '@/api/option'
         } 
       },
       getQue(pg, num){
+        let _this = this
         getQuestions(pg, num).then( res => {
-          this.questionData = res.data.data;
+          _this.questionData = res.data.data;
         })
       },
       handleSizeChange(val){
@@ -198,6 +207,7 @@ import { delOption } from '@/api/option'
         this.getQue(this.pg, this.num);
       },
       handleDelete(row) {
+        let _this = this
         this.$confirm('即将删除该题目, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
@@ -210,10 +220,7 @@ import { delOption } from '@/api/option'
                 type: 'success',
                 message: res.data.message
               });
-              this.getQue(this.pg, this.num);
-              getQuestionCount().then( res => {
-                this.total = res.data.data;
-              })
+              _this.initData()
             }else{
               this.$message({
                 type: 'info',
@@ -229,6 +236,7 @@ import { delOption } from '@/api/option'
         });
       },
       handleEdit(index, row) {
+        let _this = this
         this.dialogFormVisible = true;
         console.log('row',row)
         let editid = row.id;
@@ -237,9 +245,9 @@ import { delOption } from '@/api/option'
         this.form.type = row.question_type;
         getQuestionOptions(editid).then( res => {
           let data = res.data;
-          this.form.options = [];
+          _this.form.options = [];
           for(let o of data.data){
-            this.form.options.push({id: o.id, value: o.option_value})
+            _this.form.options.push({id: o.id, value: o.option_value})
           }
         })
       },
@@ -278,10 +286,12 @@ import { delOption } from '@/api/option'
         }
       },
       submitForm(formName) {
+        let _this = this
         if( formName === 'addForm'){
           this.dialogAddFormVisible = false;
           addQuestion(this.addForm).then( res => {
             console.log('res',res);
+            _this.initData()
           }).catch(err => console.log(err))
         }else {
           this.dialogFormVisible = false;
@@ -293,10 +303,10 @@ import { delOption } from '@/api/option'
                 type: 'success',
                 message: '修改成功'
               });
+              _this.initData()
             }
           }).catch(e => console.log(e))
         }
-
       },
     }
   }

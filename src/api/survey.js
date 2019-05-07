@@ -8,6 +8,20 @@ export function createSurvey(data) {
   })
 }
 
+export function getCompleteSurvey(id) {
+  return request({
+    url: `/survey/getcompletesurvey/${id}`,
+    method: 'get'
+  })
+}
+
+export function getSurvey(id) {
+  return request({
+    url: `/survey/getsurvey/${id}`,
+    method: 'get'
+  })
+}
+
 export function getSurveys(pg, num) {
   return request({
     url: `/survey/getsurveys/${pg}/${num}`,
@@ -32,13 +46,6 @@ export function publishSurvey(id, value) {
 export function delSurvey(id) {
   return request({
     url: `/survey/delsurvey/${id}`,
-    method: 'get'
-  })
-}
-
-export function getSurvey(id) {
-  return request({
-    url: `/survey/getcompletesurvey/${id}`,
     method: 'get'
   })
 }

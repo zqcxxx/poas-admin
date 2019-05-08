@@ -87,6 +87,8 @@
         <el-button type="primary" @click="editQuestionDeadline">确 定</el-button>
       </span>
     </el-dialog>
+    <router-view />
+
   </div>
 </template>
 

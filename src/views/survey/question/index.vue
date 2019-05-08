@@ -17,9 +17,11 @@
         width="780">
       </el-table-column>
       <el-table-column
-        prop="createAt"
         label="添加时间"
         width="200">
+        <template slot-scope="scope"> 
+          {{getStamp(scope.row.createAt)}}
+        </template>
       </el-table-column>
       <el-table-column
         label="操作"
@@ -56,11 +58,11 @@
         <el-form-item label="题目名称">
           <el-input v-model="form.title"></el-input>
         </el-form-item>
-        <el-form-item label="题目类型" prop="resource">
-          <el-radio-group v-model="form.type">
-            <el-radio label="单选"></el-radio>
-            <el-radio label="多选"></el-radio>
-            <el-radio label="填空"></el-radio>
+        <el-form-item label="题目类型">
+          <el-radio-group v-model="form.type" @change="changeType">
+            <el-radio label="0">单选</el-radio>
+            <el-radio label="1">多选</el-radio>
+            <el-radio label="2">填空</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item
@@ -71,11 +73,12 @@
           :rules="{
             required: true, message: '选项不能为空', trigger: 'blur'
           }"
+          v-show="questionType"
         >
           <el-input v-model="value.value"></el-input>
           <el-button @click.prevent="removeOption(value, 'form')" class="deletebtn">删除</el-button>
         </el-form-item>
-        <el-form-item>
+        <el-form-item v-show="questionType">
           <el-button @click="addOption('form')">新增选项</el-button>
         </el-form-item>
         <el-form-item>
@@ -135,7 +138,19 @@
 
 import { getQuestions, getQuestionCount, addQuestion, deleteQuestion, getQuestionOptions, editQuestion } from '@/api/question'
 import { delOption } from '@/api/option'
+import { formatDate } from '@/utils/date'
   export default {
+    filters: {
+      format(time) {
+        if(time){
+          let t = Number(time)
+          let date = new Date(t);
+          return formatDate(date, 'yyyy-MM-dd hh:mm');
+        }else{
+          return '未设置'
+        }
+      }
+    },
     data() {
       return {
         pg: 1,
@@ -171,9 +186,21 @@ import { delOption } from '@/api/option'
       this.initData()
     },
     methods: {
+      getStamp(date){
+        let d = new Date(date)
+        let stamp = d.getTime()
+        let fd = new Date(stamp);
+        return formatDate(fd, 'yyyy-MM-dd hh:mm');
+      },
       handleClose(){},
+      empData(){
+        this.addForm.title = '',
+        this.addForm.type = 0,
+        this.addForm.options = [{
+          value: ''
+        }]
+      },
       initData() {
-        console.log('修改数据')
         let _this = this
         this.getQue(this.pg, this.num)
         getQuestionCount().then( res => {
@@ -188,6 +215,10 @@ import { delOption } from '@/api/option'
       changeType(value){
         if(value === '2'){
           this.questionType = false;
+          for(let o of this.form.options){
+            delOption(o.id).then()
+          }
+          this.form.options = []
         }else {
           this.questionType = true;
         } 
@@ -200,11 +231,11 @@ import { delOption } from '@/api/option'
       },
       handleSizeChange(val){
         this.num = val;
-        this.getQue(this.pg, this.num);
+        this.initData()
       },
       handleCurrentChange(val){
         this.pg = val;
-        this.getQue(this.pg, this.num);
+        this.initData()
       },
       handleDelete(row) {
         let _this = this
@@ -220,7 +251,7 @@ import { delOption } from '@/api/option'
                 type: 'success',
                 message: res.data.message
               });
-              _this.initData()
+              setTimeout(_this.initData(), 5000)
             }else{
               this.$message({
                 type: 'info',
@@ -238,11 +269,10 @@ import { delOption } from '@/api/option'
       handleEdit(index, row) {
         let _this = this
         this.dialogFormVisible = true;
-        console.log('row',row)
         let editid = row.id;
         this.form.id = row.id
         this.form.title = row.question_title;
-        this.form.type = row.question_type;
+        this.form.type = (row.question_type).toString();
         getQuestionOptions(editid).then( res => {
           let data = res.data;
           _this.form.options = [];
@@ -253,7 +283,6 @@ import { delOption } from '@/api/option'
       },
       removeOption(item, formName) {
         if (formName === 'form'){
-          console.log('item',item)
           let did =  item.id
           let index = this.form.options.indexOf(item)
           if (index !== -1) {
@@ -290,20 +319,18 @@ import { delOption } from '@/api/option'
         if( formName === 'addForm'){
           this.dialogAddFormVisible = false;
           addQuestion(this.addForm).then( res => {
-            console.log('res',res);
             _this.initData()
+            _this.empData()
           }).catch(err => console.log(err))
         }else {
           this.dialogFormVisible = false;
-          console.log('form', this.form)
           editQuestion(this.form).then( res => {
             if(res.data.status === 0){
-              console.log('编辑成功')
+              _this.initData()
               this.$message({
                 type: 'success',
                 message: '修改成功'
               });
-              _this.initData()
             }
           }).catch(e => console.log(e))
         }

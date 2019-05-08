@@ -28,10 +28,12 @@
         width="680">
       </el-table-column>
       <el-table-column
-        prop="createAt"
         label="添加时间"
         width="200"
         show-overflow-tooltip>
+        <template slot-scope="scope">
+          {{ getStamp(scope.row.createAt) }}
+        </template>        
       </el-table-column>
       <el-table-column
         label="题目类型"
@@ -43,14 +45,28 @@
       <el-button @click="toggleSelection()">取消选择</el-button>
       <el-button type="success" size='medium' class='addquestion' @click="addSurvey()">添加问卷</el-button>
     </div>
+    <router-view />
+
   </div>
 </template>
 
 <script>
 import { getAllQuestions} from '@/api/question'
 import { createSurvey } from '@/api/survey'
+import { formatDate } from '@/utils/date'
 
   export default {
+    filters: {
+      format(time) {
+        if(time){
+          let t = Number(time)
+          let date = new Date(t);
+          return formatDate(date, 'yyyy-MM-dd hh:mm');
+        }else{
+          return '未设置'
+        }
+      }
+    },
     data() {
       return {
         surtitle: '',
@@ -69,6 +85,12 @@ import { createSurvey } from '@/api/survey'
       this.initData()
     },
     methods: {
+      getStamp(date){
+        let d = new Date(date)
+        let stamp = d.getTime()
+        let fd = new Date(stamp);
+        return formatDate(fd, 'yyyy-MM-dd hh:mm');
+      },
       empData(obj){
         obj.title = ''
         obj.questionid = []

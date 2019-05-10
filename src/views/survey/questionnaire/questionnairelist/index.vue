@@ -1,5 +1,13 @@
 <template>
   <div class="container">
+    <el-input
+      placeholder="请输入问卷ID"
+      v-model="input"
+      style="width: 30%; margin-bottom: 20px"
+      clearable>
+    </el-input>
+    <el-button type="primary" @click="findSurvey" icon="el-icon-search" style="margin-left: 20px; margin-bottom: 20px">搜索</el-button>
+
     <el-table
       :data="questionnaireData"
       border
@@ -58,7 +66,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <div class="block">
+    <div class="block" v-show="pgShow">
       <el-pagination
         style="margin-bottom: 20px;"
         @size-change="handleSizeChange"
@@ -93,7 +101,7 @@
 </template>
 
 <script>
-import { getSurveys, getSurveyCount, publishSurvey, delSurvey } from '@/api/survey'
+import { getSurveys, getSurveyCount, publishSurvey, delSurvey, getSurvey } from '@/api/survey'
 import { formatDate } from '@/utils/date'
   export default {
     filters: {
@@ -149,12 +157,37 @@ import { formatDate } from '@/utils/date'
         questionnaireData: [],
         total: 0,
         currentPage: 1,
+        input: null,
+        pgShow: true
       }
     },
     mounted: function () {
       this.initData()
     },
     methods: {
+      findSurvey(){
+        let _this = this
+        let id = Number(this.input)
+        if(Number.isNaN(id)){
+          this.$message.error('错误，请输入数字ID')
+        }else {
+          getSurvey(id).then(res => {
+            let arr = []
+            let obj = res.data.data
+            if(!obj){
+              this.$message({
+                type: 'info',
+                message: '无此问卷，请更换ID后重试'
+              })
+              return
+            }
+            arr.push(obj)
+            _this.questionnaireData = arr
+            console.log('questionnaireData',_this.questionnaireData)
+          })
+          _this.pgShow = false
+        }
+      },
       getStamp(date){
         let d = new Date(date)
         let stamp = d.getTime()
@@ -172,7 +205,7 @@ import { formatDate } from '@/utils/date'
               type: 'success',
               message: res.data.message
             })
-            _this.initData()
+            setTimeout(_this.initData, 500)
           }else{
             _this.$message({
               type: 'info',
@@ -206,6 +239,7 @@ import { formatDate } from '@/utils/date'
       },
       initData() {
         let _this = this
+        this.pgShow = true
         getSurveys(this.pg, this.num).then(res => {
           if(res.data.status === 0){
             _this.questionnaireData = res.data.data
@@ -239,7 +273,7 @@ import { formatDate } from '@/utils/date'
                 type: 'success',
                 message: res.data.message
               });
-              _this.initData()
+              setTimeout(_this.initData, 500)
             }else{
               this.$message({
                 type: 'info',
@@ -309,7 +343,7 @@ import { formatDate } from '@/utils/date'
                 type: 'success',
                 message: '修改成功'
               });
-              _this.initData()
+              setTimeout(_this.initData, 500)
             }
           }).catch(e => console.log(e))
         }

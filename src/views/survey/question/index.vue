@@ -215,18 +215,13 @@ import { formatDate } from '@/utils/date'
       changeType(value){
         if(value === '2'){
           this.questionType = false;
-          for(let o of this.form.options){
-            delOption(o.id).then()
-          }
-          this.form.options = []
         }else {
           this.questionType = true;
         } 
       },
       getQue(pg, num){
-        let _this = this
         getQuestions(pg, num).then( res => {
-          _this.questionData = res.data.data;
+          this.questionData = res.data.data;
         })
       },
       handleSizeChange(val){
@@ -251,7 +246,7 @@ import { formatDate } from '@/utils/date'
                 type: 'success',
                 message: res.data.message
               });
-              setTimeout(_this.initData(), 5000)
+              setTimeout(_this.initData, 500)
             }else{
               this.$message({
                 type: 'info',
@@ -319,14 +314,20 @@ import { formatDate } from '@/utils/date'
         if( formName === 'addForm'){
           this.dialogAddFormVisible = false;
           addQuestion(this.addForm).then( res => {
-            _this.initData()
+            setTimeout(_this.initData, 500)
             _this.empData()
           }).catch(err => console.log(err))
         }else {
           this.dialogFormVisible = false;
+          if(this.form.type === '2'){
+            for(let o of this.form.options){
+              delOption(o.id).then()
+            }
+            this.form.options = []
+          }
           editQuestion(this.form).then( res => {
             if(res.data.status === 0){
-              _this.initData()
+              setTimeout(_this.initData, 500)
               this.$message({
                 type: 'success',
                 message: '修改成功'

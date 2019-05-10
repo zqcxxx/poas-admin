@@ -45,6 +45,12 @@ export const constantRouterMap = [
   },
 
   {
+    path: '/showresult/:id',
+    component: () => import('@/views/showresult/index'),
+    hidden: true
+  },
+
+  {
     path: '/survey',
     component: Layout,
     redirect: '/survey/question',

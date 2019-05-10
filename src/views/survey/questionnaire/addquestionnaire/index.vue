@@ -77,7 +77,6 @@ import { formatDate } from '@/utils/date'
         },
         multipleSelection: [],
         questionData: [],
-        total: 0,
         question: null,
       }
     },
@@ -91,10 +90,10 @@ import { formatDate } from '@/utils/date'
         let fd = new Date(stamp);
         return formatDate(fd, 'yyyy-MM-dd hh:mm');
       },
-      empData(obj){
-        obj.title = ''
-        obj.questionid = []
-        obj.deadline = ''
+      empData(){
+        this.addQuestionnaireData.title = ''
+        this.addQuestionnaireData.questionid = []
+        this.addQuestionnaireData.deadline = ''
       },
       addSurvey(){
         let _this = this
@@ -129,9 +128,10 @@ import { formatDate } from '@/utils/date'
                   message: res.data.message
                 })
                 _this.surtitle = ''
-                _this.empData(_this.addQuestionnaireData)
+                _this.empData()
                 _this.initData()
               }else{
+                _this.empData()
                 _this.$message({
                   type: 'info',
                   message: '添加失败，请重试'
@@ -176,11 +176,6 @@ import { formatDate } from '@/utils/date'
             _this.questionData = res.data.data;
           }
         }).catch(e => console.log(e))
-        getQuestionCount().then( res => {
-          if(res.status === 200){
-            _this.total = res.data.data
-          }
-        })
       },
     }
   }

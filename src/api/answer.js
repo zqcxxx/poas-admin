@@ -7,3 +7,10 @@ export function submitAnswer(data) {
     data
   })
 }
+
+export function getAnswer(id) {
+  return request({
+    url: `answer/getanswer/${id}`,
+    method: 'get'
+  })
+}

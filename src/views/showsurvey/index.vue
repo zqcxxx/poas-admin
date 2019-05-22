@@ -16,7 +16,6 @@
         </div>
       </el-checkbox-group> 
     </el-card>
-
     <el-card class="box-card item-card" v-for="(item, index) in fiiContent" :key="item.id" style="margin-top: 20px">
       <div slot="header" class="clearfix">
         <span>{{item.title}}</span>

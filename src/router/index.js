@@ -30,7 +30,7 @@ export const constantRouterMap = [
     path: '/',
     component: Layout,
     redirect: '/dashboard',
-    name: 'Dashboard',
+    name: '问卷系统',
     hidden: true,
     children: [{
       path: 'dashboard',

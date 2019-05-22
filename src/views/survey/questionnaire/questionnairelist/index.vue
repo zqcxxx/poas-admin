@@ -21,7 +21,7 @@
       <el-table-column
         prop="survey_title"
         label="问卷名称"
-        width="400">
+        width="280">
       </el-table-column>
       <el-table-column
         prop="createAt"
@@ -59,7 +59,16 @@
             type="success"
             v-if="scope.row.ispublished === 1"
             @click="handlePublish(scope.row)">发布</el-button>
-        <el-button
+          <el-popover
+              v-if="scope.row.ispublished === 0"
+              placement="bottom"
+              title="链接"
+              width="400"
+              trigger="click"
+              :content="'http://zhangqichao.site:8083/survey/' + scope.row.id">
+          <el-button size="mini" type="success" slot="reference">分享链接</el-button>
+          </el-popover>
+          <el-button
             size="mini"
             type="danger"
             @click="handleDelete(scope.row)">删除</el-button>
